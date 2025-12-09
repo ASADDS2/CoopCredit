@@ -56,7 +56,7 @@ services:
       - key: DB_NAME
         fromDatabase:
           name: coopcredit-db
-          property: databaseName
+          property: database
       - key: RISK_CENTRAL_URL
         fromService:
           type: web
