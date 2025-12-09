@@ -50,15 +50,4 @@ services:
       - key: JWT_SECRET
         generateValue: true
       - key: CORS_ORIGINS
-        value: https://coop-credit-front.onrender.com
-
-  # 3. Frontend (Angular Static Site)
-  - type: web
-    name: coop-credit-front
-    env: static
-    plan: free
-    buildCommand: cd front-end-web && npm install && npm run build
-    staticPublishPath: front-end-web/dist/coop-credit-front/browser
-    envVars:
-      - key: NODE_VERSION
-        value: 20.11.0
+        value: "*"
