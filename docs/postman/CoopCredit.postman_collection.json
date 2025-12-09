@@ -1,0 +1,102 @@
+{
+  "info": {
+    "name": "CoopCredit API",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_postman_id": "c0ffee00-0000-4000-8000-000000000001"
+  },
+  "item": [
+    {
+      "name": "Auth - Register",
+      "request": {
+        "method": "POST",
+        "header": [{"key": "Content-Type", "value": "application/json"}],
+        "url": {"raw": "{{baseUrl}}/api/auth/register", "host": ["{{baseUrl}}"], "path": ["api","auth","register"]},
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"username\": \"admin\",\n  \"password\": \"admin123\",\n  \"role\": \"ROLE_ADMIN\"\n}"
+        }
+      }
+    },
+    {
+      "name": "Auth - Login",
+      "request": {
+        "method": "POST",
+        "header": [{"key": "Content-Type", "value": "application/json"}],
+        "url": {"raw": "{{baseUrl}}/api/auth/login", "host": ["{{baseUrl}}"], "path": ["api","auth","login"]},
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"username\": \"admin\",\n  \"password\": \"admin123\"\n}"
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "var data = pm.response.json();",
+              "if (data && data.data && data.data.token) {",
+              "  pm.environment.set('token', data.data.token);",
+              "}"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Affiliates - Create (ADMIN)",
+      "request": {
+        "method": "POST",
+        "header": [
+          {"key": "Content-Type", "value": "application/json"},
+          {"key": "Authorization", "value": "Bearer {{token}}"}
+        ],
+        "url": {"raw": "{{baseUrl}}/api/affiliates", "host": ["{{baseUrl}}"], "path": ["api","affiliates"]},
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"name\": \"John Doe\",\n  \"document\": \"123456789\",\n  \"salary\": 3000,\n  \"active\": true\n}"
+        }
+      }
+    },
+    {
+      "name": "Credit - Submit (AFILIADO)",
+      "request": {
+        "method": "POST",
+        "header": [
+          {"key": "Content-Type", "value": "application/json"},
+          {"key": "Authorization", "value": "Bearer {{token}}"}
+        ],
+        "url": {"raw": "{{baseUrl}}/api/credit-applications", "host": ["{{baseUrl}}"], "path": ["api","credit-applications"]},
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"affiliateId\": 1,\n  \"amount\": 5000,\n  \"termMonths\": 12\n}"
+        }
+      }
+    },
+    {
+      "name": "Credit - Evaluate (ANALISTA/ADMIN)",
+      "request": {
+        "method": "POST",
+        "header": [
+          {"key": "Authorization", "value": "Bearer {{token}}"}
+        ],
+        "url": {"raw": "{{baseUrl}}/api/credit-applications/1/evaluate", "host": ["{{baseUrl}}"], "path": ["api","credit-applications","1","evaluate"]}
+      }
+    },
+    {
+      "name": "Credit - Pending (ANALISTA/ADMIN)",
+      "request": {
+        "method": "GET",
+        "header": [
+          {"key": "Authorization", "value": "Bearer {{token}}"}
+        ],
+        "url": {"raw": "{{baseUrl}}/api/credit-applications/pending", "host": ["{{baseUrl}}"], "path": ["api","credit-applications","pending"]}
+      }
+    }
+  ],
+  "event": [],
+  "variable": [
+    {"key": "baseUrl", "value": "http://localhost:8080"},
+    {"key": "token", "value": ""}
+  ]
+}

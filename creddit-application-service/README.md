@@ -42,6 +42,6 @@ Once running, access the Swagger UI:
 - **Affiliates**: `/api/affiliates`
 
 ## 📊 Observability
-Metrics are exposed via Actuator for Prometheus scraping:
+Metrics are exposed via Actuator for Prometheus scraping:m
 - Health: `/actuator/health`
 - Metrics: `/actuator/prometheus`
