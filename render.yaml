@@ -8,7 +8,7 @@ services:
   # 1. Risk Central Mock Service
   - type: web
     name: risk-central-mock-service
-    env: docker
+    runtime: docker
     region: oregon
     plan: free
     branch: main
@@ -24,7 +24,7 @@ services:
   # 2. Creddit Application Service
   - type: web
     name: creddit-application-service
-    env: docker
+    runtime: docker
     region: oregon
     plan: free
     branch: main
@@ -53,8 +53,7 @@ services:
         fromService:
           type: web
           name: risk-central-mock-service
-          property: host
-          envVarKey: RISK_CENTRAL_URL
+          envVarKey: RENDER_EXTERNAL_URL
       - key: JWT_SECRET
         generateValue: true
       - key: CORS_ORIGINS
