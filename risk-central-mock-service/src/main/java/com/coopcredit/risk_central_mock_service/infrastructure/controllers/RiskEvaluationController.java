@@ -45,6 +45,12 @@ public class RiskEvaluationController {
                 return ResponseEntity.ok(response);
         }
 
+        @GetMapping("/")
+        public ResponseEntity<String> home() {
+                return ResponseEntity.ok(
+                                "Risk Central Mock Service - API is running. Visit /swagger-ui.html for API documentation.");
+        }
+
         @GetMapping("/health")
         public ResponseEntity<String> health() {
                 return ResponseEntity.ok("Service is running");
