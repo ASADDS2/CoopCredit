@@ -1,0 +1,66 @@
+services:
+  # 1. Database (Managed PostgreSQL)
+  - type: psql
+    name: coopcredit-db
+    env: docker
+    plan: free
+    databaseName: coopcredit_db
+    user: coopcredit_user
+
+  # 2. Risk Central Mock Service
+  - type: web
+    name: risk-central-mock-service
+    env: docker
+    dockerContext: ./risk-central-mock-service
+    dockerfilePath: ./risk-central-mock-service/Dockerfile
+    plan: free
+    envVars:
+      - key: PORT
+        value: 8081
+      - key: SPRING_PROFILES_ACTIVE
+        value: prod
+
+  # 3. Creddit Application Service
+  - type: web
+    name: creddit-application-service
+    env: docker
+    dockerContext: ./creddit-application-service
+    dockerfilePath: ./creddit-application-service/Dockerfile
+    plan: free
+    envVars:
+      - key: SERVER_PORT
+        value: 8080
+      - key: SPRING_PROFILES_ACTIVE
+        value: prod
+      - key: DB_USERNAME
+        fromDatabase:
+          name: coopcredit-db
+          property: user
+      - key: DB_PASSWORD
+        fromDatabase:
+          name: coopcredit-db
+          property: password
+      - key: SPRING_DATASOURCE_URL
+        fromDatabase:
+          name: coopcredit-db
+          property: connectionString
+      - key: RISK_CENTRAL_URL
+        fromService:
+          type: web
+          name: risk-central-mock-service
+          property: url
+      - key: JWT_SECRET
+        generateValue: true
+      - key: CORS_ORIGINS
+        value: https://coop-credit-front.onrender.com
+
+  # 4. Frontend (Angular Static Site)
+  - type: web
+    name: coop-credit-front
+    env: node
+    plan: free
+    buildCommand: cd front-end-web && npm install && npm run build
+    startCommand: cd front-end-web && npm start
+    envVars:
+      - key: NODE_VERSION
+        value: 20.11.0
