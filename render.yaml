@@ -9,22 +9,27 @@ services:
   - type: web
     name: risk-central-mock-service
     env: docker
-    dockerContext: ./risk-central-mock-service
-    dockerfilePath: ./risk-central-mock-service/Dockerfile
+    region: oregon
     plan: free
+    branch: main
+    dockerfilePath: ./Dockerfile
+    dockerContext: ./risk-central-mock-service
     envVars:
       - key: PORT
         value: 8081
       - key: SPRING_PROFILES_ACTIVE
         value: prod
+    healthCheckPath: /actuator/health
 
   # 2. Creddit Application Service
   - type: web
     name: creddit-application-service
     env: docker
-    dockerContext: ./creddit-application-service
-    dockerfilePath: ./creddit-application-service/Dockerfile
+    region: oregon
     plan: free
+    branch: main
+    dockerfilePath: ./Dockerfile
+    dockerContext: ./creddit-application-service
     envVars:
       - key: SERVER_PORT
         value: 8080
@@ -48,8 +53,10 @@ services:
         fromService:
           type: web
           name: risk-central-mock-service
-          property: url
+          property: host
+          envVarKey: RISK_CENTRAL_URL
       - key: JWT_SECRET
         generateValue: true
       - key: CORS_ORIGINS
         value: "*"
+    healthCheckPath: /actuator/health
