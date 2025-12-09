@@ -1,0 +1,41 @@
+spring:
+  application:
+    name: risk-central-mock-service
+
+server:
+  port: ${PORT:8081}
+
+# Actuator Configuration for Observability
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,prometheus
+      base-path: /actuator
+  endpoint:
+    health:
+      show-details: always
+    prometheus:
+      enabled: true
+  metrics:
+    export:
+      prometheus:
+        enabled: true
+    tags:
+      application: ${spring.application.name}
+
+# OpenAPI/Swagger Documentation
+springdoc:
+  api-docs:
+    path: /v3/api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+    enabled: true
+
+# Logging Configuration
+logging:
+  level:
+    root: INFO
+    com.coopcredit.risk_central_mock_service: DEBUG
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} - %msg%n"

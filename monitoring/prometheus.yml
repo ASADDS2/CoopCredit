@@ -1,0 +1,17 @@
+global:
+  scrape_interval: 15s
+
+scrape_configs:
+  - job_name: 'prometheus'
+    static_configs:
+      - targets: ['localhost:9090']
+
+  - job_name: 'risk-central-mock-service'
+    metrics_path: '/actuator/prometheus'
+    static_configs:
+      - targets: ['risk-central-mock-service:8081']
+
+  - job_name: 'creddit-application-service'
+    metrics_path: '/actuator/prometheus'
+    static_configs:
+      - targets: ['creddit-application-service:8080']

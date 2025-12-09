@@ -1,0 +1,115 @@
+version: '3.8'
+
+services:
+  # PostgreSQL Database (on alternate port 5433)
+  postgres:
+    image: postgres:16-alpine
+    container_name: coopcredit-postgres
+    environment:
+      POSTGRES_DB: coopcredit_db
+      POSTGRES_USER: coopcredit_user
+      POSTGRES_PASSWORD: coopcredit_pass
+    ports:
+      - "5433:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - coopcredit-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U coopcredit_user -d coopcredit_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+  # Risk Central Mock Service (lightweight, no JPA)
+  risk-central-mock:
+    build:
+      context: ./risk-central-mock-service
+      dockerfile: ../Dockerfile
+    container_name: risk-central-mock-service
+    ports:
+      - "8081:8081"
+    environment:
+      - PORT=8081
+      - SPRING_PROFILES_ACTIVE=prod
+    networks:
+      - coopcredit-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:8081/actuator/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # Creddit Application Service (Main microservice)
+  creddit-application:
+    build:
+      context: ./creddit-application-service
+      dockerfile: ../Dockerfile
+    container_name: creddit-application-service
+    ports:
+      - "8080:8080"
+    environment:
+      - SERVER_PORT=8080
+      - SPRING_PROFILES_ACTIVE=prod
+      - DB_USERNAME=coopcredit_user
+      - DB_PASSWORD=coopcredit_pass
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/coopcredit_db
+      - RISK_CENTRAL_URL=http://risk-central-mock:8081
+      - JWT_SECRET=mySecretKeyForJWTTokenGenerationMustBeLongEnough256BitsAtLeast
+      - CORS_ORIGINS=http://localhost:3000,http://localhost:4200
+    networks:
+      - coopcredit-network
+    depends_on:
+      postgres:
+        condition: service_healthy
+      risk-central-mock:
+        condition: service_healthy
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:8080/actuator/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 60s
+
+  # Prometheus (Metrics)
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: coopcredit-prometheus
+    volumes:
+      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml
+    ports:
+      - "19090:9090"
+    networks:
+      - coopcredit-network
+    restart: unless-stopped
+
+  # Grafana (Dashboard)
+  grafana:
+    image: grafana/grafana:latest
+    container_name: coopcredit-grafana
+    ports:
+      - "3000:3000"
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+    volumes:
+      - grafana_data:/var/lib/grafana
+    networks:
+      - coopcredit-network
+    depends_on:
+      - prometheus
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
+    driver: local
+  grafana_data:
+    driver: local
+
+networks:
+  coopcredit-network:
+    driver: bridge
