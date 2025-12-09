@@ -45,10 +45,18 @@ services:
         fromDatabase:
           name: coopcredit-db
           property: password
-      - key: SPRING_DATASOURCE_URL
+      - key: DB_HOST
         fromDatabase:
           name: coopcredit-db
-          property: connectionString
+          property: host
+      - key: DB_PORT
+        fromDatabase:
+          name: coopcredit-db
+          property: port
+      - key: DB_NAME
+        fromDatabase:
+          name: coopcredit-db
+          property: databaseName
       - key: RISK_CENTRAL_URL
         fromService:
           type: web
