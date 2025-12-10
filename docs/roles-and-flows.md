@@ -18,18 +18,18 @@
   1. Admin logs in.
   2. `POST /api/affiliates` to create an affiliate.
 
-- Submit Credit Application (Afiliado)
-  1. Afiliado logs in.
+- Submit Credit Application (Affiliate)
+  1. Affiliate logs in.
   2. `POST /api/credit-applications` with amount and term.
   3. The application is created in PENDING state.
 
-- Evaluate Credit Application (Analista/Admin)
+- Evaluate Credit Application (Analyst/Admin)
   1. Analyst/Admin logs in.
   2. `POST /api/credit-applications/{id}/evaluate` triggers Risk Central evaluation via adapter.
   3. Application is updated with RiskEvaluation and decision.
 
 ## Authorization Rules
 
-- Afiliado can only access their own applications.
+- Affiliate can only access their own applications.
 - Analyst can access only pending applications.
 - Admin has full access.

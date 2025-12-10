@@ -1,6 +1,6 @@
-# Arquitectura de Microservicios - CoopCredit
+# Microservices Architecture - CoopCredit
 
-## Diagrama de Microservicios
+## Microservices Diagram
 
 ```mermaid
 graph TB
@@ -60,23 +60,24 @@ graph TB
     DOCKER --> GRAF
 ```
 
-## Descripción de Servicios
+## Service Description
 
-### 1. Credit Application Service (Puerto 8080)
-**Responsabilidades**:
-- Gestión de afiliados
-- Procesamiento de solicitudes de crédito
-- Autenticación y autorización (JWT)
-- Integración con evaluación de riesgo
+### 1. Credit Application Service (Port 8080)
 
-**Tecnologías**:
+**Responsibilities**:
+- Affiliate management
+- Credit application processing
+- Authentication and authorization (JWT)
+- Risk evaluation integration
+
+**Technologies**:
 - Spring Boot 3.5
 - Java 21
 - PostgreSQL
-- Flyway (migraciones)
+- Flyway (migrations)
 - JWT Security
 
-**Endpoints principales**:
+**Main Endpoints**:
 ```
 POST   /api/auth/register
 POST   /api/auth/login
@@ -87,17 +88,18 @@ POST   /api/credit-applications
 POST   /api/credit-applications/{id}/evaluate
 ```
 
-### 2. Risk Central Mock Service (Puerto 8081)
-**Responsabilidades**:
-- Simulación de evaluación de riesgo crediticio
-- Cálculo de score crediticio
-- Determinación de nivel de riesgo
-- Recomendaciones de aprobación
+### 2. Risk Central Mock Service (Port 8081)
 
-**Tecnologías**:
+**Responsibilities**:
+- Credit risk evaluation simulation
+- Credit score calculation
+- Risk level determination
+- Approval recommendations
+
+**Technologies**:
 - Spring Boot 3.5
 - Java 21
-- Algoritmo determinístico basado en hash
+- Deterministic hash-based algorithm
 
 **Endpoints**:
 ```
@@ -106,29 +108,29 @@ GET    /health
 GET    /swagger-ui.html
 ```
 
-### 3. Servicios Futuros (Planificados)
+### 3. Future Services (Planned)
 
 #### Notification Service (8082)
-- Envío de emails
+- Email sending
 - SMS notifications
 - Push notifications
 - Webhooks
 
 #### Reporting Service (8083)
-- Generación de reportes
+- Report generation
 - Analytics
-- Dashboards ejecutivos
-- Exportación de datos
+- Executive dashboards
+- Data export
 
 #### Payment Service (8084)
-- Procesamiento de pagos
-- Integración con pasarelas
-- Gestión de cuotas
-- Historial de pagos
+- Payment processing
+- Gateway integration
+- Installment management
+- Payment history
 
-## Comunicación entre Servicios
+## Service Communication
 
-### Patrones de Comunicación
+### Communication Patterns
 
 ```mermaid
 sequenceDiagram
@@ -149,20 +151,20 @@ sequenceDiagram
     CAS-->>Client: Application Created
 ```
 
-### Tipos de Comunicación
+### Communication Types
 
-1. **Síncrona (REST)**:
+1. **Synchronous (REST)**:
    - Credit Application → Risk Central
-   - Usado para operaciones críticas
-   - Timeout: 30 segundos
-   - Circuit Breaker habilitado
+   - Used for critical operations
+   - Timeout: 30 seconds
+   - Circuit Breaker enabled
 
-2. **Asíncrona (Futura)**:
-   - Notificaciones
-   - Reportes
-   - Procesamiento batch
+2. **Asynchronous (Future)**:
+   - Notifications
+   - Reports
+   - Batch processing
 
-## Configuración de Docker Compose
+## Docker Compose Configuration
 
 ```yaml
 version: '3.8'
@@ -213,23 +215,23 @@ volumes:
   postgres_data:
 ```
 
-## Observabilidad y Monitoreo
+## Observability and Monitoring
 
-### Métricas Recolectadas
+### Collected Metrics
 
-1. **Métricas de Aplicación**:
-   - Requests por segundo
-   - Latencia por endpoint
-   - Tasa de error
+1. **Application Metrics**:
+   - Requests per second
+   - Latency per endpoint
+   - Error rate
    - JVM metrics (heap, threads, GC)
 
-2. **Métricas de Negocio**:
-   - Solicitudes creadas
-   - Solicitudes aprobadas/rechazadas
-   - Tiempo promedio de evaluación
-   - Score promedio de riesgo
+2. **Business Metrics**:
+   - Applications created
+   - Applications approved/rejected
+   - Average evaluation time
+   - Average risk score
 
-3. **Métricas de Infraestructura**:
+3. **Infrastructure Metrics**:
    - CPU usage
    - Memory usage
    - Disk I/O
@@ -237,7 +239,7 @@ volumes:
 
 ### Health Checks
 
-Todos los servicios exponen endpoints de salud:
+All services expose health endpoints:
 ```
 GET /actuator/health
 GET /actuator/info
@@ -245,53 +247,55 @@ GET /actuator/metrics
 GET /actuator/prometheus
 ```
 
-## Seguridad
+## Security
 
-### Autenticación y Autorización
-- JWT tokens con 24h de expiración
-- Roles: ADMIN, ANALISTA, AFILIADO
-- HTTPS en producción
+### Authentication and Authorization
+
+- JWT tokens with 24h expiration
+- Roles: ADMIN, ANALYST, AFFILIATE
+- HTTPS in production
 - Rate limiting
 
-### Seguridad de Red
-- Servicios internos no expuestos
-- Comunicación encriptada
+### Network Security
+
+- Internal services not exposed
+- Encrypted communication
 - Secrets management
-- CORS configurado
+- CORS configured
 
-## Escalabilidad
+## Scalability
 
-### Estrategias de Escalado
+### Scaling Strategies
 
 1. **Horizontal Scaling**:
-   - Multiple instancias de cada servicio
-   - Load balancing con nginx/HAProxy
-   - Sesiones stateless (JWT)
+   - Multiple instances of each service
+   - Load balancing with nginx/HAProxy
+   - Stateless sessions (JWT)
 
 2. **Vertical Scaling**:
-   - Ajuste de recursos JVM
-   - Optimización de pool de conexiones
-   - Caching estratégico
+   - JVM resource tuning
+   - Connection pool optimization
+   - Strategic caching
 
 3. **Database Scaling**:
    - Read replicas
    - Connection pooling
    - Query optimization
-   - Índices apropiados
+   - Proper indexing
 
 ## Deployment
 
-### Ambientes
+### Environments
 
 1. **Development**:
-   - Docker Compose local
-   - Base de datos H2/PostgreSQL
+   - Local Docker Compose
+   - H2/PostgreSQL database
    - Mock services
 
 2. **Staging**:
    - Docker Swarm/K8s
-   - PostgreSQL dedicado
-   - Servicios reales
+   - Dedicated PostgreSQL
+   - Real services
 
 3. **Production**:
    - Kubernetes

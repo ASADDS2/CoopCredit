@@ -4,9 +4,9 @@ import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Primary;
 import org.springframework.context.annotation.Profile;
 
 import javax.sql.DataSource;
@@ -24,7 +24,7 @@ public class DatabaseConfig {
     private static final Logger logger = LoggerFactory.getLogger(DatabaseConfig.class);
 
     @Bean
-    @ConditionalOnProperty(name = "DATABASE_URL")
+    @Primary
     public DataSource dataSource() throws URISyntaxException {
         String databaseUrl = System.getenv("DATABASE_URL");
 
@@ -32,7 +32,7 @@ public class DatabaseConfig {
             throw new IllegalStateException("DATABASE_URL environment variable is not set");
         }
 
-        logger.info("Configuring database from DATABASE_URL");
+        logger.info("Configuring database from DATABASE_URL environment variable");
 
         HikariConfig config = new HikariConfig();
 
@@ -60,15 +60,10 @@ public class DatabaseConfig {
                 database = database.substring(1);
             }
 
-            // Convert to JDBC format
-            String jdbcUrl = String.format("jdbc:postgresql://%s:%d/%s", host, port, database);
+            // Convert to JDBC format with SSL (required for cloud databases like Render)
+            String jdbcUrl = String.format("jdbc:postgresql://%s:%d/%s?sslmode=require", host, port, database);
 
-            // Add SSL if needed (Render requires SSL)
-            if (host != null && host.contains("render.com")) {
-                jdbcUrl += "?sslmode=require";
-            }
-
-            logger.info("JDBC URL configured: {}", jdbcUrl.replaceAll(":[^:@]+@", ":****@"));
+            logger.info("JDBC URL configured for host: {}", host);
 
             config.setJdbcUrl(jdbcUrl);
             config.setUsername(username);
@@ -81,8 +76,8 @@ public class DatabaseConfig {
 
         // HikariCP settings
         config.setDriverClassName("org.postgresql.Driver");
-        config.setMaximumPoolSize(10);
-        config.setMinimumIdle(2);
+        config.setMaximumPoolSize(5);
+        config.setMinimumIdle(1);
         config.setConnectionTimeout(30000);
         config.setIdleTimeout(600000);
         config.setMaxLifetime(1800000);

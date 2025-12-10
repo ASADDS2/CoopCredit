@@ -1,45 +1,45 @@
-# Diagrama de Casos de Uso - CoopCredit
+# Use Case Diagram - CoopCredit
 
-## Diagrama Principal
+## Main Diagram
 
 ```mermaid
 graph LR
-    subgraph "Actores"
-        AFILIADO[👤 Afiliado]
-        ANALISTA[👔 Analista]
+    subgraph "Actors"
+        AFFILIATE[👤 Affiliate]
+        ANALYST[👔 Analyst]
         ADMIN[👨‍💼 Admin]
-        SYSTEM[🤖 Sistema]
+        SYSTEM[🤖 System]
     end
     
-    subgraph "Casos de Uso - Gestión de Afiliados"
-        UC1[Registrar Afiliado]
-        UC2[Consultar Afiliado]
-        UC3[Actualizar Afiliado]
-        UC4[Listar Afiliados]
+    subgraph "Use Cases - Affiliate Management"
+        UC1[Register Affiliate]
+        UC2[View Affiliate]
+        UC3[Update Affiliate]
+        UC4[List Affiliates]
     end
     
-    subgraph "Casos de Uso - Gestión de Créditos"
-        UC5[Solicitar Crédito]
-        UC6[Consultar Solicitud]
-        UC7[Listar Mis Solicitudes]
-        UC8[Evaluar Solicitud]
-        UC9[Listar Solicitudes Pendientes]
-        UC10[Aprobar/Rechazar Solicitud]
+    subgraph "Use Cases - Credit Management"
+        UC5[Submit Credit Application]
+        UC6[View Application]
+        UC7[List My Applications]
+        UC8[Evaluate Application]
+        UC9[List Pending Applications]
+        UC10[Approve/Reject Application]
     end
     
-    subgraph "Casos de Uso - Autenticación"
-        UC11[Registrar Usuario]
-        UC12[Iniciar Sesión]
-        UC13[Cerrar Sesión]
+    subgraph "Use Cases - Authentication"
+        UC11[Register User]
+        UC12[Login]
+        UC13[Logout]
     end
     
-    subgraph "Casos de Uso - Sistema"
-        UC14[Evaluar Riesgo Automático]
-        UC15[Calcular Cuota]
-        UC16[Validar Documentos]
+    subgraph "Use Cases - System"
+        UC14[Automatic Risk Evaluation]
+        UC15[Calculate Payment]
+        UC16[Validate Documents]
     end
     
-    %% Relaciones Admin
+    %% Admin Relations
     ADMIN --> UC1
     ADMIN --> UC2
     ADMIN --> UC3
@@ -47,20 +47,20 @@ graph LR
     ADMIN --> UC10
     ADMIN --> UC11
     
-    %% Relaciones Analista
-    ANALISTA --> UC2
-    ANALISTA --> UC8
-    ANALISTA --> UC9
-    ANALISTA --> UC10
+    %% Analyst Relations
+    ANALYST --> UC2
+    ANALYST --> UC8
+    ANALYST --> UC9
+    ANALYST --> UC10
     
-    %% Relaciones Afiliado
-    AFILIADO --> UC5
-    AFILIADO --> UC6
-    AFILIADO --> UC7
-    AFILIADO --> UC12
-    AFILIADO --> UC13
+    %% Affiliate Relations
+    AFFILIATE --> UC5
+    AFFILIATE --> UC6
+    AFFILIATE --> UC7
+    AFFILIATE --> UC12
+    AFFILIATE --> UC13
     
-    %% Relaciones Sistema
+    %% System Relations
     UC5 --> UC14
     UC8 --> UC14
     UC5 --> UC15
@@ -74,119 +74,126 @@ graph LR
     UC10 -.extends.-> UC8
 ```
 
-## Descripción de Casos de Uso
+## Use Case Descriptions
 
-### Gestión de Afiliados
+### Affiliate Management
 
-#### UC1: Registrar Afiliado
-- **Actor Principal**: Admin
-- **Precondiciones**: Usuario autenticado con rol ADMIN
-- **Flujo Principal**:
-  1. Admin ingresa datos del afiliado
-  2. Sistema valida documento único
-  3. Sistema valida datos requeridos
-  4. Sistema crea afiliado con estado ACTIVO
-  5. Sistema retorna confirmación
+#### UC1: Register Affiliate
 
-#### UC2: Consultar Afiliado
-- **Actores**: Admin, Analista
-- **Precondiciones**: Usuario autenticado
-- **Flujo Principal**:
-  1. Usuario busca por documento o ID
-  2. Sistema retorna datos del afiliado
+- **Primary Actor**: Admin
+- **Preconditions**: User authenticated with ADMIN role
+- **Main Flow**:
+  1. Admin enters affiliate data
+  2. System validates unique document
+  3. System validates required fields
+  4. System creates affiliate with ACTIVE status
+  5. System returns confirmation
 
-### Gestión de Créditos
+#### UC2: View Affiliate
 
-#### UC5: Solicitar Crédito
-- **Actor Principal**: Afiliado
-- **Precondiciones**: 
-  - Afiliado autenticado
-  - Afiliado con estado ACTIVO
-  - Antigüedad mínima 6 meses
-- **Flujo Principal**:
-  1. Afiliado ingresa monto, plazo y propósito
-  2. Sistema valida monto máximo según salario
-  3. Sistema calcula cuota mensual
-  4. Sistema valida relación cuota/ingreso < 40%
-  5. Sistema invoca evaluación de riesgo automática
-  6. Sistema crea solicitud con estado PENDING
-  7. Sistema retorna número de solicitud
+- **Actors**: Admin, Analyst
+- **Preconditions**: User authenticated
+- **Main Flow**:
+  1. User searches by document or ID
+  2. System returns affiliate data
 
-#### UC8: Evaluar Solicitud
-- **Actor Principal**: Analista
-- **Precondiciones**: 
-  - Usuario autenticado con rol ANALISTA
-  - Solicitud en estado PENDING
-- **Flujo Principal**:
-  1. Analista revisa solicitud y evaluación de riesgo
-  2. Analista puede solicitar re-evaluación
-  3. Sistema actualiza evaluación de riesgo
-  4. Analista toma decisión
+### Credit Management
 
-#### UC14: Evaluar Riesgo Automático
-- **Actor**: Sistema
-- **Trigger**: Nueva solicitud o re-evaluación
-- **Flujo**:
-  1. Sistema envía datos a Risk Central
-  2. Risk Central calcula score (0-1000)
-  3. Risk Central determina nivel de riesgo
-  4. Sistema almacena evaluación
-  5. Sistema actualiza estado de solicitud
+#### UC5: Submit Credit Application
 
-### Autenticación y Seguridad
+- **Primary Actor**: Affiliate
+- **Preconditions**: 
+  - Affiliate authenticated
+  - Affiliate with ACTIVE status
+  - Minimum 6 months seniority
+- **Main Flow**:
+  1. Affiliate enters amount, term, and purpose
+  2. System validates maximum amount based on salary
+  3. System calculates monthly payment
+  4. System validates debt-to-income ratio < 40%
+  5. System invokes automatic risk evaluation
+  6. System creates application with PENDING status
+  7. System returns application number
 
-#### UC11: Registrar Usuario
-- **Actor Principal**: Admin
-- **Flujo Principal**:
-  1. Admin crea usuario con rol específico
-  2. Sistema valida username único
-  3. Sistema hashea password
-  4. Sistema asocia con afiliado si aplica
+#### UC8: Evaluate Application
 
-#### UC12: Iniciar Sesión
-- **Actores**: Todos
-- **Flujo Principal**:
-  1. Usuario ingresa credenciales
-  2. Sistema valida credenciales
-  3. Sistema genera JWT token
-  4. Sistema retorna token y rol
+- **Primary Actor**: Analyst
+- **Preconditions**: 
+  - User authenticated with ANALYST role
+  - Application in PENDING status
+- **Main Flow**:
+  1. Analyst reviews application and risk evaluation
+  2. Analyst can request re-evaluation
+  3. System updates risk evaluation
+  4. Analyst makes decision
 
-## Matriz de Permisos por Rol
+#### UC14: Automatic Risk Evaluation
 
-| Caso de Uso | AFILIADO | ANALISTA | ADMIN |
-|-------------|----------|----------|--------|
-| Registrar Afiliado | ❌ | ❌ | ✅ |
-| Consultar Afiliado | ❌ | ✅ | ✅ |
-| Actualizar Afiliado | ❌ | ❌ | ✅ |
-| Listar Afiliados | ❌ | ❌ | ✅ |
-| Solicitar Crédito | ✅ | ❌ | ❌ |
-| Consultar Solicitud | ✅* | ✅ | ✅ |
-| Listar Mis Solicitudes | ✅ | ❌ | ❌ |
-| Evaluar Solicitud | ❌ | ✅ | ✅ |
-| Listar Solicitudes Pendientes | ❌ | ✅ | ✅ |
-| Aprobar/Rechazar | ❌ | ✅ | ✅ |
+- **Actor**: System
+- **Trigger**: New application or re-evaluation
+- **Flow**:
+  1. System sends data to Risk Central
+  2. Risk Central calculates score (0-1000)
+  3. Risk Central determines risk level
+  4. System stores evaluation
+  5. System updates application status
 
-*Solo sus propias solicitudes
+### Authentication and Security
 
-## Reglas de Negocio Principales
+#### UC11: Register User
 
-1. **Validación de Afiliado**:
-   - Documento único en el sistema
-   - Salario > 0
-   - Estado debe ser ACTIVO para solicitar crédito
+- **Primary Actor**: Admin
+- **Main Flow**:
+  1. Admin creates user with specific role
+  2. System validates unique username
+  3. System hashes password
+  4. System associates with affiliate if applicable
 
-2. **Validación de Crédito**:
-   - Monto máximo = Salario × 10
-   - Cuota mensual < 40% del salario
-   - Antigüedad mínima: 6 meses
-   - Plazo: 6-60 meses
+#### UC12: Login
 
-3. **Evaluación de Riesgo**:
-   - Score 0-400: ALTO riesgo → Rechazo automático
-   - Score 401-700: MEDIO riesgo → Revisión manual
-   - Score 701-1000: BAJO riesgo → Pre-aprobado
+- **Actors**: All
+- **Main Flow**:
+  1. User enters credentials
+  2. System validates credentials
+  3. System generates JWT token
+  4. System returns token and role
 
-4. **Seguridad**:
-   - JWT con expiración 24 horas
-   - Passwords hasheados con BCrypt
-   - Validación de roles en cada endpoint
+## Role Permission Matrix
+
+| Use Case | AFFILIATE | ANALYST | ADMIN |
+|----------|-----------|---------|-------|
+| Register Affiliate | ❌ | ❌ | ✅ |
+| View Affiliate | ❌ | ✅ | ✅ |
+| Update Affiliate | ❌ | ❌ | ✅ |
+| List Affiliates | ❌ | ❌ | ✅ |
+| Submit Credit Application | ✅ | ❌ | ❌ |
+| View Application | ✅* | ✅ | ✅ |
+| List My Applications | ✅ | ❌ | ❌ |
+| Evaluate Application | ❌ | ✅ | ✅ |
+| List Pending Applications | ❌ | ✅ | ✅ |
+| Approve/Reject | ❌ | ✅ | ✅ |
+
+*Only their own applications
+
+## Main Business Rules
+
+1. **Affiliate Validation**:
+   - Unique document in the system
+   - Salary > 0
+   - Status must be ACTIVE to apply for credit
+
+2. **Credit Validation**:
+   - Maximum amount = Salary × 10
+   - Monthly payment < 40% of salary
+   - Minimum seniority: 6 months
+   - Term: 6-60 months
+
+3. **Risk Evaluation**:
+   - Score 0-400: HIGH risk → Automatic rejection
+   - Score 401-700: MEDIUM risk → Manual review
+   - Score 701-1000: LOW risk → Pre-approved
+
+4. **Security**:
+   - JWT with 24-hour expiration
+   - Passwords hashed with BCrypt
+   - Role validation on each endpoint
