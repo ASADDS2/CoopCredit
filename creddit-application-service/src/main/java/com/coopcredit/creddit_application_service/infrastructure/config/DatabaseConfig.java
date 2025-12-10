@@ -7,7 +7,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Primary;
 import org.springframework.context.annotation.Profile;
 
 import javax.sql.DataSource;
@@ -25,7 +24,6 @@ public class DatabaseConfig {
     private static final Logger logger = LoggerFactory.getLogger(DatabaseConfig.class);
 
     @Bean
-    @Primary
     @ConditionalOnProperty(name = "DATABASE_URL")
     public DataSource dataSource() throws URISyntaxException {
         String databaseUrl = System.getenv("DATABASE_URL");
