@@ -1,6 +1,7 @@
 package com.coopcredit.creddit_application_service.infrastructure.web.dto.auth;
 
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Pattern;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -19,7 +20,8 @@ public class RegisterRequest {
     private String password;
 
     @NotBlank(message = "Role is required")
-    private String role; // ROLE_AFILIADO, ROLE_ANALISTA, ROLE_ADMIN
+    @Pattern(regexp = "^(ROLE_AFILIADO|ROLE_ANALISTA|ROLE_ADMIN)$", message = "Role must be one of: ROLE_AFILIADO, ROLE_ANALISTA, ROLE_ADMIN")
+    private String role;
 
     private Long affiliateId; // Optional, only for ROLE_AFILIADO
 }

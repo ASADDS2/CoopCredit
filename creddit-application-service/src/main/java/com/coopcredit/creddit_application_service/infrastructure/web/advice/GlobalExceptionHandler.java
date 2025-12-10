@@ -5,6 +5,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ProblemDetail;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -77,6 +78,19 @@ public class GlobalExceptionHandler {
         problemDetail.setProperty("timestamp", LocalDateTime.now());
         problemDetail.setProperty("traceId", generateTraceId());
         problemDetail.setProperty("errors", errors);
+        return problemDetail;
+    }
+
+    @ExceptionHandler(HttpMessageNotReadableException.class)
+    public ProblemDetail handleHttpMessageNotReadableException(HttpMessageNotReadableException ex,
+            WebRequest request) {
+        ProblemDetail problemDetail = ProblemDetail.forStatusAndDetail(
+                HttpStatus.BAD_REQUEST,
+                "Request body is invalid or unreadable. Please verify the JSON structure.");
+        problemDetail.setTitle("Invalid Request Body");
+        problemDetail.setType(URI.create("https://api.coopcredit.com/errors/invalid-request-body"));
+        problemDetail.setProperty("timestamp", LocalDateTime.now());
+        problemDetail.setProperty("traceId", generateTraceId());
         return problemDetail;
     }
 

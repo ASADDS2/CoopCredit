@@ -3,6 +3,7 @@ package com.coopcredit.creddit_application_service.infrastructure.controllers;
 import com.coopcredit.creddit_application_service.domain.model.User;
 import com.coopcredit.creddit_application_service.domain.ports.in.auth.AuthenticateUserUseCase;
 import com.coopcredit.creddit_application_service.domain.ports.in.auth.RegisterUserUseCase;
+import com.coopcredit.creddit_application_service.infrastructure.security.JwtService;
 import com.coopcredit.creddit_application_service.infrastructure.web.dto.auth.AuthResponse;
 import com.coopcredit.creddit_application_service.infrastructure.web.dto.auth.LoginRequest;
 import com.coopcredit.creddit_application_service.infrastructure.web.dto.auth.RegisterRequest;
@@ -21,29 +22,40 @@ public class AuthController {
 
     private final RegisterUserUseCase registerUserUseCase;
     private final AuthenticateUserUseCase authenticateUserUseCase;
+    private final JwtService jwtService;
 
     public AuthController(RegisterUserUseCase registerUserUseCase,
-            AuthenticateUserUseCase authenticateUserUseCase) {
+            AuthenticateUserUseCase authenticateUserUseCase,
+            JwtService jwtService) {
         this.registerUserUseCase = registerUserUseCase;
         this.authenticateUserUseCase = authenticateUserUseCase;
+        this.jwtService = jwtService;
     }
 
     @PostMapping("/register")
-    @Operation(summary = "Register a new user")
+    @Operation(summary = "Register a new user and get JWT token")
     public ResponseEntity<AppResponse<AuthResponse>> register(@Valid @RequestBody RegisterRequest request) {
         // Map DTO to domain
         User user = new User();
         user.setUsername(request.getUsername());
         user.setPassword(request.getPassword());
         user.setRole(request.getRole());
-        user.setAffiliateId(request.getAffiliateId());
+        // Treat affiliateId=0 as null to prevent FK constraint violation
+        Long affiliateId = request.getAffiliateId();
+        user.setAffiliateId(affiliateId != null && affiliateId > 0 ? affiliateId : null);
 
         // Execute use case
         User createdUser = registerUserUseCase.execute(user);
 
-        // Create response
+        // Generate JWT token for immediate use
+        String token = jwtService.generateToken(
+                createdUser.getUsername(),
+                createdUser.getRole(),
+                createdUser.getAffiliateId());
+
+        // Create response with token
         AuthResponse response = new AuthResponse(
-                null, // No token on registration
+                token,
                 createdUser.getUsername(),
                 createdUser.getRole(),
                 createdUser.getAffiliateId());
@@ -59,7 +71,7 @@ public class AuthController {
         // Execute authentication
         String token = authenticateUserUseCase.execute(request.getUsername(), request.getPassword());
 
-        // Create response (you may want to include user details from token)
+        // Create response
         AuthResponse response = new AuthResponse(
                 token,
                 request.getUsername(),

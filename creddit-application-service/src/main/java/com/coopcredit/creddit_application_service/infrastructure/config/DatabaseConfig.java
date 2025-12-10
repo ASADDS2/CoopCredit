@@ -142,6 +142,20 @@ public class DatabaseConfig {
 
     private DataSource createDataSourceFromJdbcUrl(HikariConfig config, String jdbcUrl) {
         config.setJdbcUrl(jdbcUrl);
+
+        // Set username and password from environment variables
+        String username = getEnvVar("DB_USERNAME");
+        String password = getEnvVar("DB_PASSWORD");
+
+        if (username != null) {
+            config.setUsername(username);
+            logger.info("Using DB_USERNAME from environment");
+        }
+        if (password != null) {
+            config.setPassword(password);
+            logger.info("Using DB_PASSWORD from environment");
+        }
+
         config.setDriverClassName("org.postgresql.Driver");
         config.setMaximumPoolSize(5);
         config.setMinimumIdle(1);
