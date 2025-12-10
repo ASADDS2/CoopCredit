@@ -1,6 +1,6 @@
-# Arquitectura Hexagonal - CoopCredit
+# Hexagonal Architecture - CoopCredit
 
-## Diagrama de Arquitectura Hexagonal
+## Hexagonal Architecture Diagram
 
 ```mermaid
 graph TB
@@ -86,53 +86,56 @@ graph TB
     CS --> RISKEVAL
 ```
 
-## Descripción de Capas
+## Layer Description
 
 ### 1. Domain Layer (Core)
-- **Entidades**: POJOs puros sin dependencias del framework
-  - `Affiliate`: Representa un afiliado de la cooperativa
-  - `CreditApplication`: Solicitud de crédito
-  - `RiskEvaluation`: Evaluación de riesgo
-  - `User`: Usuario del sistema
 
-- **Puertos de Entrada** (Interfaces que definen casos de uso):
+- **Entities**: Pure POJOs without framework dependencies
+  - `Affiliate`: Represents a cooperative member
+  - `CreditApplication`: Credit application request
+  - `RiskEvaluation`: Risk assessment result
+  - `User`: System user
+
+- **Input Ports** (Interfaces defining use cases):
   - `RegisterAffiliateUseCase`
   - `RegisterCreditApplicationUseCase`
   - `EvaluateCreditApplicationUseCase`
   - `AuthenticateUserUseCase`
 
-- **Puertos de Salida** (Interfaces para servicios externos):
+- **Output Ports** (Interfaces for external services):
   - `AffiliateRepositoryPort`
   - `CreditApplicationRepositoryPort`
   - `RiskEvaluationPort`
   - `UserRepositoryPort`
 
 ### 2. Application Layer
-- **Casos de Uso**: Implementaciones de la lógica de negocio
-  - Orquestan las operaciones del dominio
-  - No contienen lógica de infraestructura
-  - Implementan los puertos de entrada
+
+- **Use Cases**: Business logic implementations
+  - Orchestrate domain operations
+  - Contain no infrastructure logic
+  - Implement input ports
 
 ### 3. Infrastructure Layer
-- **Adaptadores de Entrada**:
-  - REST Controllers: Exponen la API HTTP
-  - Swagger UI: Documentación interactiva
 
-- **Adaptadores de Salida**:
-  - JPA Repositories: Persistencia en PostgreSQL
-  - Risk Central Client: Integración con servicio externo
-  - JWT Provider: Manejo de tokens de seguridad
+- **Input Adapters**:
+  - REST Controllers: Expose HTTP API
+  - Swagger UI: Interactive documentation
 
-## Principios de la Arquitectura Hexagonal
+- **Output Adapters**:
+  - JPA Repositories: PostgreSQL persistence
+  - Risk Central Client: External service integration
+  - JWT Provider: Security token handling
 
-1. **Inversión de Dependencias**: El dominio no depende de la infraestructura
-2. **Aislamiento del Dominio**: La lógica de negocio está protegida de cambios externos
-3. **Testabilidad**: Fácil testing mediante mocks de los puertos
-4. **Flexibilidad**: Los adaptadores pueden cambiar sin afectar el dominio
+## Hexagonal Architecture Principles
 
-## Flujo de Datos
+1. **Dependency Inversion**: Domain does not depend on infrastructure
+2. **Domain Isolation**: Business logic is protected from external changes
+3. **Testability**: Easy testing through port mocks
+4. **Flexibility**: Adapters can change without affecting the domain
 
-1. Request HTTP → REST Controller
+## Data Flow
+
+1. HTTP Request → REST Controller
 2. Controller → Application Use Case
 3. Use Case → Domain Port (Input)
 4. Domain Logic Execution
