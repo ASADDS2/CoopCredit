@@ -45,88 +45,87 @@ public class DatabaseConfig {
             }
         });
 
-        // Try multiple sources for database URL
-        String databaseUrl = System.getenv("DATABASE_URL");
-        logger.info("System.getenv('DATABASE_URL'): {}", databaseUrl != null ? "found" : "null");
+        // Try to build database URL from individual environment variables (Render
+        // style)
+        String dbHost = getEnvVar("DB_HOST");
+        String dbPort = getEnvVar("DB_PORT", "5432");
+        String dbName = getEnvVar("DB_NAME");
+        String dbUsername = getEnvVar("DB_USERNAME");
+        String dbPassword = getEnvVar("DB_PASSWORD");
 
-        // Try SPRING_DATASOURCE_URL (used in Render)
-        if (databaseUrl == null || databaseUrl.isEmpty()) {
-            databaseUrl = System.getenv("SPRING_DATASOURCE_URL");
-            logger.info("System.getenv('SPRING_DATASOURCE_URL'): {}", databaseUrl != null ? "found" : "null");
-        }
-
-        if (databaseUrl == null || databaseUrl.isEmpty()) {
-            databaseUrl = environment.getProperty("spring.datasource.url");
-            logger.info("environment.getProperty('spring.datasource.url'): {}", databaseUrl != null ? "found" : "null");
-        }
-
-        if (databaseUrl == null || databaseUrl.isEmpty()) {
-            databaseUrl = environment.getProperty("DATABASE_URL");
-            logger.info("environment.getProperty('DATABASE_URL'): {}", databaseUrl != null ? "found" : "null");
-        }
-
-        logger.info("DATABASE_URL from env: {}", databaseUrl != null ? "found" : "not found");
-
-        if (databaseUrl == null || databaseUrl.isEmpty()) {
-            logger.error("DATABASE_URL not found anywhere!");
-            logger.error("Active profiles: {}", String.join(", ", environment.getActiveProfiles()));
-            throw new IllegalStateException(
-                    "DATABASE_URL environment variable is not set. " +
-                            "Please configure DATABASE_URL in Render environment variables. " +
-                            "Check the logs above for available database-related variables.");
-        }
-
-        logger.info("DATABASE_URL found, proceeding with configuration...");
-
-        logger.info("Configuring database from DATABASE_URL");
+        logger.info("DB_HOST: {}", dbHost != null ? "found" : "null");
+        logger.info("DB_NAME: {}", dbName != null ? "found" : "null");
+        logger.info("DB_USERNAME: {}", dbUsername != null ? "found" : "null");
+        logger.info("DB_PASSWORD: {}", dbPassword != null ? "****" : "null");
 
         HikariConfig config = new HikariConfig();
 
-        try {
-            // Handle both formats: postgresql:// and jdbc:postgresql://
-            if (databaseUrl.startsWith("jdbc:")) {
-                // Already in JDBC format
-                logger.info("DATABASE_URL already in JDBC format");
-                config.setJdbcUrl(databaseUrl);
-                // Extract credentials from URL if present
-                return createDataSourceFromJdbcUrl(config, databaseUrl);
-            }
-
-            // Parse DATABASE_URL format: postgresql://user:pass@host:port/database
-            URI dbUri = new URI(databaseUrl);
-
-            String userInfo = dbUri.getUserInfo();
-            if (userInfo == null) {
-                throw new IllegalStateException("DATABASE_URL does not contain user credentials");
-            }
-
-            String[] credentials = userInfo.split(":");
-            String username = credentials[0];
-            String password = credentials.length > 1 ? credentials[1] : "";
-
-            String host = dbUri.getHost();
-            int port = dbUri.getPort();
-            if (port == -1) {
-                port = 5432; // Default PostgreSQL port
-            }
-
-            String database = dbUri.getPath();
-            if (database != null && database.startsWith("/")) {
-                database = database.substring(1);
-            }
-
-            // Convert to JDBC format with SSL (required for cloud databases like Render)
-            String jdbcUrl = String.format("jdbc:postgresql://%s:%d/%s?sslmode=require", host, port, database);
-
-            logger.info("JDBC URL configured for host: {}", host);
+        // If individual variables are set, build the URL from them
+        if (dbHost != null && dbName != null && dbUsername != null && dbPassword != null) {
+            String jdbcUrl = String.format("jdbc:postgresql://%s:%s/%s?sslmode=require", dbHost, dbPort, dbName);
+            logger.info("Built JDBC URL from individual env vars for host: {}", dbHost);
 
             config.setJdbcUrl(jdbcUrl);
-            config.setUsername(username);
-            config.setPassword(password);
+            config.setUsername(dbUsername);
+            config.setPassword(dbPassword);
+        } else {
+            // Fallback: Try DATABASE_URL or SPRING_DATASOURCE_URL
+            String databaseUrl = getEnvVar("DATABASE_URL");
+            if (databaseUrl == null) {
+                databaseUrl = getEnvVar("SPRING_DATASOURCE_URL");
+            }
+            if (databaseUrl == null) {
+                databaseUrl = environment.getProperty("spring.datasource.url");
+            }
 
-        } catch (URISyntaxException e) {
-            logger.error("Failed to parse DATABASE_URL: {}", databaseUrl);
-            throw e;
+            if (databaseUrl == null || databaseUrl.isEmpty()) {
+                logger.error("No database configuration found!");
+                logger.error("Expected: DB_HOST, DB_NAME, DB_USERNAME, DB_PASSWORD or DATABASE_URL");
+                throw new IllegalStateException(
+                        "Database configuration not found. " +
+                                "Please set DB_HOST, DB_NAME, DB_USERNAME, DB_PASSWORD environment variables.");
+            }
+
+            logger.info("Using DATABASE_URL/SPRING_DATASOURCE_URL");
+
+            try {
+                // Handle both formats: postgresql:// and jdbc:postgresql://
+                if (databaseUrl.startsWith("jdbc:")) {
+                    config.setJdbcUrl(databaseUrl);
+                    return createDataSourceFromJdbcUrl(config, databaseUrl);
+                }
+
+                // Parse DATABASE_URL format: postgresql://user:pass@host:port/database
+                URI dbUri = new URI(databaseUrl);
+                String userInfo = dbUri.getUserInfo();
+                if (userInfo == null) {
+                    throw new IllegalStateException("DATABASE_URL does not contain user credentials");
+                }
+
+                String[] credentials = userInfo.split(":");
+                String username = credentials[0];
+                String password = credentials.length > 1 ? credentials[1] : "";
+
+                String host = dbUri.getHost();
+                int port = dbUri.getPort();
+                if (port == -1)
+                    port = 5432;
+
+                String database = dbUri.getPath();
+                if (database != null && database.startsWith("/")) {
+                    database = database.substring(1);
+                }
+
+                String jdbcUrl = String.format("jdbc:postgresql://%s:%d/%s?sslmode=require", host, port, database);
+                logger.info("JDBC URL configured for host: {}", host);
+
+                config.setJdbcUrl(jdbcUrl);
+                config.setUsername(username);
+                config.setPassword(password);
+            } catch (URISyntaxException e) {
+                logger.error("Failed to parse DATABASE_URL");
+                throw e;
+            }
         }
 
         // HikariCP settings
@@ -151,5 +150,18 @@ public class DatabaseConfig {
         config.setMaxLifetime(1800000);
         config.setAutoCommit(true);
         return new HikariDataSource(config);
+    }
+
+    private String getEnvVar(String name) {
+        String value = System.getenv(name);
+        if (value == null || value.isEmpty()) {
+            value = environment.getProperty(name);
+        }
+        return (value != null && !value.isEmpty()) ? value : null;
+    }
+
+    private String getEnvVar(String name, String defaultValue) {
+        String value = getEnvVar(name);
+        return value != null ? value : defaultValue;
     }
 }
